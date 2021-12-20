@@ -24,6 +24,7 @@ public interface IUploadService {
     /**
      * 上传文件分片
      * @param chunkDTO
+     * @return
      */
-    void uploadChunk(FileChunkDTO chunkDTO) throws BusinessException, IOException;
+    String uploadChunk(FileChunkDTO chunkDTO) throws BusinessException, IOException;
 }

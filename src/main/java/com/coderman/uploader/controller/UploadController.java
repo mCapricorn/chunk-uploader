@@ -4,12 +4,16 @@ import com.coderman.uploader.dto.FileChunkDTO;
 import com.coderman.uploader.dto.FileChunkResultDTO;
 import com.coderman.uploader.response.RestApiResponse;
 import com.coderman.uploader.service.IUploadService;
+import com.sun.tools.javac.util.StringUtils;
+import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
@@ -53,10 +57,10 @@ public class UploadController {
      * @return
      */
     @PostMapping(value = "/upload/chunk")
-    public RestApiResponse<Object> uploadChunk(FileChunkDTO chunkDTO,HttpServletResponse response)  {
+    public RestApiResponse<Object> uploadChunk(FileChunkDTO chunkDTO, HttpServletResponse response)  {
         try {
-            uploadService.uploadChunk(chunkDTO);
-            return RestApiResponse.success(chunkDTO.getIdentifier());
+            String completeFileUrl = uploadService.uploadChunk(chunkDTO);
+            return RestApiResponse.success(StringUtil.isNullOrEmpty(completeFileUrl) ? chunkDTO.getIdentifier() : completeFileUrl);
         } catch (Exception e) {
             Map<String, Object> error = getErrorMap(response, e);
             logger.error("upload chunk error :{}",e.getMessage());

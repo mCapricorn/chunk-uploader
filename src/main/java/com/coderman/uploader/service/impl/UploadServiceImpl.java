@@ -9,6 +9,7 @@ import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +34,11 @@ public class UploadServiceImpl implements IUploadService {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    private final static String uploadFolder = "F:\\upload\\";
+    @Value("${upload.path}")
+    private String uploadFolder;
+
+    @Value("${upload.url-domain}")
+    private String urlDomain;
 
     /**
      * 检查文件是否存在，如果存在则跳过该文件的上传，如果不存在，返回需要上传的分片集合
@@ -68,9 +73,10 @@ public class UploadServiceImpl implements IUploadService {
      * 上传分片
      *
      * @param chunkDTO
+     * @return
      */
     @Override
-    public void uploadChunk(FileChunkDTO chunkDTO) throws BusinessException {
+    public String uploadChunk(FileChunkDTO chunkDTO) throws BusinessException {
         //分块的目录
         String chunkFileFolderPath = getChunkFileFolderPath(chunkDTO.getIdentifier());
         File chunkFileFolder = new File(chunkFileFolderPath);
@@ -93,10 +99,12 @@ public class UploadServiceImpl implements IUploadService {
                 if (mergeFile == null) {
                     throw new BusinessException(BusinessErrorCode.INVALID_PARAMETER, "合并文件失败");
                 }
+                return urlDomain + getFileRelativelyPath(chunkDTO.getIdentifier(), chunkDTO.getFilename());
             }
         } catch (Exception e) {
             throw new BusinessException(BusinessErrorCode.INVALID_PARAMETER, e.getMessage());
         }
+        return "";
     }
 
     /**
